@@ -1,0 +1,313 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #111827;
+  color: #e5e7eb;
+}
+
+button {
+  font: inherit;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  border-right: 1px solid #374151;
+  padding: 20px;
+  background: #0f172a;
+  overflow-y: auto;
+}
+
+.site-title {
+  font-size: 22px;
+  margin: 0 0 20px;
+}
+
+.tree,
+.tree ul {
+  list-style: none;
+  padding-left: 16px;
+}
+
+.tree {
+  padding-left: 0;
+}
+
+.tree li {
+  margin: 6px 0;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.tree-file {
+  border: none;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: left;
+}
+
+.tree-file:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.content {
+  padding: 40px;
+  max-width: 980px;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.post-header {
+  border-bottom: 1px solid #374151;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+}
+
+.post-header h1 {
+  margin: 0 0 10px;
+  font-size: 36px;
+}
+
+.date {
+  color: #9ca3af;
+  margin: 0 0 12px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tags span {
+  font-size: 14px;
+  color: #bfdbfe;
+  background: #1e3a8a;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.markdown-body {
+  line-height: 1.75;
+  font-size: 17px;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  margin-top: 36px;
+  margin-bottom: 12px;
+}
+
+.markdown-body p {
+  margin: 14px 0;
+}
+
+.markdown-body pre {
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: #020617;
+}
+
+.markdown-body code {
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+
+.markdown-body :not(pre) > code {
+  background: #1f2937;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.markdown-body a {
+  color: #93c5fd;
+}
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid #374151;
+  }
+
+  .content {
+    padding: 24px;
+  }
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+    --text: #000;
+    --text-h: #000;
+    --bg: #fff;
+    --border: #ddd;
+    --code-bg: #f5f5f5;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  #root {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border: none !important;
+    display: block !important;
+    min-height: auto !important;
+    text-align: left !important;
+  }
+
+  aside,
+  nav,
+  .sidebar,
+  .side-bar,
+  .toc,
+  .table-of-contents,
+  .left-sidebar,
+  .left-panel {
+    display: none !important;
+  }
+
+  main,
+  article,
+  .content,
+  .main,
+  .markdown-body {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+
+  .layout,
+  .page,
+  .container,
+  .wrapper {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+.markdown-body :not(pre) > code {
+  display: inline;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+/* light theme override */
+body {
+  background: #ffffff;
+  color: #111827;
+}
+
+.layout {
+  background: #ffffff;
+}
+
+.sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+}
+
+.site-title {
+  color: #111827;
+}
+
+summary {
+  color: #111827;
+}
+
+.tree-file {
+  color: #374151;
+}
+
+.tree-file:hover {
+  color: #000000;
+}
+
+.content {
+  background: #ffffff;
+  color: #111827;
+}
+
+.post-header {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.post-header h1 {
+  color: #111827;
+}
+
+.date {
+  color: #6b7280;
+}
+
+.markdown-body {
+  color: #111827;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  color: #111827;
+}
+
+.markdown-body a {
+  color: #2563eb;
+}
+
+.markdown-body :not(pre) > code {
+  display: inline;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-weight: 700;
+  color: #111827;
+}
+
+.markdown-body pre {
+  background: #f6f8fa !important;
+  color: #24292f !important;
+  border: 1px solid #d0d7de;
+}
+
+.markdown-body pre code {
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0;
+  font-family: "Cascadia Code", "Consolas", monospace;
+}

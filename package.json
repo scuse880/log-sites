@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:learning": "npm run dev -w learning-log",
+    "dev:workout": "npm run dev -w workout-log",
+    "build:learning": "npm run build -w learning-log",
+    "build:workout": "npm run build -w workout-log",
+    "preview:learning": "npm run preview -w learning-log",
+    "preview:workout": "npm run preview -w workout-log"
+  }
+}
