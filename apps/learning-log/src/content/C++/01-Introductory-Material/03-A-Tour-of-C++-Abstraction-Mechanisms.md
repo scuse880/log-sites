@@ -105,7 +105,7 @@ Vector f()
 ### 3.3.4 Suppressing Operations
 
 Using the default copy or move for a class in a hierarchy is typically a disaster: given only a pointer to a base, we simply don't know what members the derived class has, so we can't know how to copy them. So, the best thing to do is usually to delete the default copy and move operations.
-- ```
+```
 class Shape {
 public:
     Shape(const Shape&) = delete;                   // no copy operations
