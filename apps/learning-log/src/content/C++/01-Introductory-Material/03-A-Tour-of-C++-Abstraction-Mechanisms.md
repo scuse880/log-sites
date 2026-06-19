@@ -66,3 +66,55 @@ A class hierarchy is a set of classes ordered in a lattice created by derivation
 A class hierarchy offers two kinds of benefits:
 - Interface inheritance: An object of a derived class can be used wherever an object of a base class is required.
 - Implementation inheritance: A base class provides functions or data that simplifies the implementation of derived classes.
+
+## 3.3 Copy and Move
+
+The default meaning of copy is memberwise copy: copy each member.
+
+### 3.3.1 Copying Containers
+
+A suitable definition of a copy constructor for `Vector` allocates the space for the required number of elements and then copies the elements into it.
+
+### 3.3.2 Moving Containers
+
+```
+Vector::Vector(Vector&& a)
+    :elem{a.elem},
+    sz{a.sz}
+{
+    a.elem = nullptr;
+    a.sz = 0;
+}
+```
+    - The `&&` means "rvalue reference" and is a reference to which we can bind an rvalue.
+```
+Vector f()
+{
+    Vector x(1000);
+    Vector y(1000);
+    Vector z(1000);
+    // ...
+    z = x;              // we get a copy
+    y = std::move(x);   // we get a move
+    // ...
+    return z;           // we get a move
+}
+```
+    - When `z` is destroyed, it too has been moved from (by the `return`) so that, like `x`, it is empty (it holds no elements).
+
+### 3.3.4 Suppressing Operations
+
+Using the default copy or move for a class in a hierarchy is typically a disaster: given only a pointer to a base, we simply don't know what members the derived class has, so we can't know how to copy them. So, the best thing to do is usually to delete the default copy and move operations.
+- ```
+class Shape {
+public:
+    Shape(const Shape&) = delete;                   // no copy operations
+    Shape& operator=(const Shape&) = delete;
+
+    Shape(Shape&&) = delete;                        // no move operations
+    Shape& operator=(Shape&&) = delete;
+    
+    ~Shape();
+    // ...
+};
+```
