@@ -86,7 +86,7 @@ Vector::Vector(Vector&& a)
     a.sz = 0;
 }
 ```
-    - The `&&` means "rvalue reference" and is a reference to which we can bind an rvalue.
+- The `&&` means "rvalue reference" and is a reference to which we can bind an rvalue.
 ```
 Vector f()
 {
@@ -100,7 +100,7 @@ Vector f()
     return z;           // we get a move
 }
 ```
-    - When `z` is destroyed, it too has been moved from (by the `return`) so that, like `x`, it is empty (it holds no elements).
+- When `z` is destroyed, it too has been moved from (by the `return`) so that, like `x`, it is empty (it holds no elements).
 
 ### 3.3.4 Suppressing Operations
 
