@@ -118,3 +118,38 @@ public:
     // ...
 };
 ```
+
+## 3.4 Templates
+
+A template is a class or a function that we parameterize with a set of types or values.
+
+### 3.4.1 Parameterized Types
+
+The `template<typename T>` prefix makes `T` a parameter of the declaration it prefixes.
+
+### 3.4.3 Function Objects
+
+One particularly useful kind of template is the function object (sometimes called a functor), which is used to define objects that can be called like functions. For example:
+```
+template<typename T>
+class Less_than {
+    const T val;    // value to compare against
+public:
+    Less_than(const T& v) :val(v) {}
+    bool operator()(const T& x) const {return x<val; } // call operator
+};
+```
+
+Function objects used to specify the meaning of key operations of a general algorithm (such as `Less_than` for `count()`) are often referred to as policy objects.
+
+### 3.4.4 Variadic Templates
+
+The key to implementing a variadic template is to note that when you pass a list of arguments to it, you can separate the first argument from the rest.
+
+### 3.4.5 Aliases
+
+```
+using size_t = unsigned int;
+```
+- Having the alias `size_t` allows the programmer to write portable code.
+
