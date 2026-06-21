@@ -61,4 +61,25 @@ The standard containers and their basic operations are designed to be similar fr
 
 Please note that a `vector` is usually more efficient than a `list` for short sequences of small elements (even for `insert()` and `erase()`).
 
+## 4.5 Algorithms
+
+The standard algorithms are expressed in terms of sequences of elements.
+
+### 4.5.1 Use of Iterators
+
+Iterators are used to separate algorithms and containers.
+
+### 4.5.2 Iterator Types
+
+What is common for all iterators is their semantics and the naming of their operations.
+
+### 4.5.3 Stream Iterators
+
+For example, an input stream produces a sequence of values, and we write a sequence of values to an output stream. Consequently, the notion of iterators can be usefully applied to input and output.
+
+### 4.5.5 Algorithm Overview
+
+In the context of the C++ standard library, an algorithm is a function template operating on sequences of elements.
+
+
 
