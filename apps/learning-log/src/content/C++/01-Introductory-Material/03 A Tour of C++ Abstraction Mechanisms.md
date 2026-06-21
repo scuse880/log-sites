@@ -1,5 +1,4 @@
 ---
-
 title: 03 A tour of C++: Abstraction Mechanisms
 date: 2026-06-14
 ---
