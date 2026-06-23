@@ -9,7 +9,7 @@ Many important things are deemed *implementation-defined* by the standard. This 
 
 Other behaviors are *unspecified*; that is, a range of possible behaviors are acceptable, but the implementer is not obliged to specify which actually occur.
 
- A construct is deemed *undefined* by the standard if no reasonable behavior is required by an implementation.
+A construct is deemed *undefined* by the standard if no reasonable behavior is required by an implementation.
 
 ### 6.1.1 Implementation
 
