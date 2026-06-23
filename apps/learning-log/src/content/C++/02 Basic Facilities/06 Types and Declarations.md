@@ -1,6 +1,6 @@
 ---
 title: 06 Types and Declarations
-date: 2026-06
+date: 2026-06-23
 ---
 
 ## 6.1 The ISO C++ Standard
