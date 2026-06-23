@@ -46,3 +46,60 @@ The `packaged_task` type is provided to simplify setting up tasks connected with
 ### 5.3.5.3 async()
 
 Basically, `async()` separates the "call part" of a function call from the "get the result part," and separates both from the actual execution of the task. There is an obvious limitation: Don't even think of using `async()` for tasks that share resources needing locking.
+
+## 5.4 Small Utility Components
+
+### 5.4.1 Time
+
+The standard-library facilities for dealing with time are found in the subnamespace `std::chrono` in `<chrono>`.
+
+Don’t make statements about ‘‘efficiency’’ of code without first doing time measurements. Guesses about performance are most unreliable.
+
+### 5.4.2 Type Functions
+
+A type function is a function that is evaluated at compile-time given a type as its argument or returning a type.
+
+### 5.4.2.1 iterator_traits
+
+The standard library provides a mechanism, `iterator_traits` that allows us to check which kind of iterator is supported.
+
+`Iterator_category<Iter>{}` constructs a ‘‘tag’’ value indicating the kind of iterator provided.
+
+### 5.4.2.2 Type Predicates
+
+A standard-library type predicate is a simple type function that answers a fundamental question about types.
+
+### 5.4.3 pair and tuple
+
+The first member of a `pair` is called `first` and the second member is called `second`.
+
+The standard-library `pair` (from `<utility>`) is quite frequently used in the standard library and
+elsewhere.
+
+## 5.5 Regular Expressions
+
+In `<regex>`, the standard library provides support for regular expressions in the form of the `std::regex` class and its supporting functions.
+
+## 5.6 Math
+
+### 5.6.1 Mathematical Functions and Algorithms
+
+In `<cmath>`, we find the "usual mathematical functions."
+
+Complex number versions of these functions are found in `<complex>`.
+
+In `<numeric>`, we find a small set of generalized numerical algorithms, such as `accumulate()`.
+
+### 5.6.3 Random Numbers
+
+A random number generator consists of two parts:
+- an engine that produces a sequence of random or pseudo-random values.
+- a distribution that maps those values into a mathematical distribution in a range.
+
+### 5.6.4 Vector Arithmetic
+
+Consequently, the standard library provides (in `<valarray>`) a `vector`-like template, called `valarray`, that is less general and more amenable to optimization for numerical computation.
+
+### 5.6.5 Numeric Limits
+
+In `<limits>`, the standard library provides classes that describe the properties of built-in types.
