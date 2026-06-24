@@ -13,7 +13,7 @@ A construct is deemed *undefined* by the standard if no reasonable behavior is r
 
 ### 6.1.1 Implementation
 
-A hosted implementation includes all the standard-library facilities as described in the standard and in this book. A freestanding implementation may provide fewer standard-library facilities, as long as the following are provided: ...
+A hosted implementation includes all the standard-library facilities as described in the standard. A freestanding implementation may provide fewer standard-library facilities, as long as the following are provided: ...
 
 ### 6.1.2 The Basic Source Character Set
 

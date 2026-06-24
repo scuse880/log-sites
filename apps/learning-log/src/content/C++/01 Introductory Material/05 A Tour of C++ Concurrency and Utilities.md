@@ -23,6 +23,11 @@ We call a computation that can potentially be executed concurrently with other c
 
 ### 5.3.2 Passing Arguments
 
+```
+thread t1 {f,ref(some_vec)};
+thread t2 {F(vec2)};
+```
+
 The compiler checks that the first argument can be invoked given the following arguments and builds the necessary function object to pass to the thread.
 
 ### 5.3.4 Sharing Data
@@ -61,7 +66,7 @@ A type function is a function that is evaluated at compile-time given a type as 
 
 ### 5.4.2.1 iterator_traits
 
-The standard library provides a mechanism, `iterator_traits` that allows us to check which kind of iterator is supported.
+The standard library provides a mechanism, `iterator_traits`, that allows us to check which kind of iterator is supported.
 
 `Iterator_category<Iter>{}` constructs a ‘‘tag’’ value indicating the kind of iterator provided.
 
