@@ -9,7 +9,7 @@ The fundamental operation on a pointer is dereferencing, that is, referring to t
 
 ### 7.2.1 void*
 
-A pointer to any type of object can be assigned to a variable of type `void∗`, but a pointer to function or a pointer to member cannot.
+A pointer to any type of object can be assigned to a variable of type `void*`, but a pointer to function or a pointer to member cannot.
 
 ### 7.2.2 nullptr
 
@@ -19,7 +19,7 @@ There is just one `nullptr`, which can be used for every pointer type, rather th
 
 Access out of the range of an array is undefined and usually disastrous. In particular, run-time range checking is neither guaranteed nor common.
 
-The number of elements of the array(not allocated using `new`), the array bound, must be a constant expression. If
+The number of elements of the array (not allocated using `new`), the array bound, must be a constant expression. If
 you need variable bounds, use a vector.
 
 ### 7.3.1 Array Initializers
@@ -30,15 +30,15 @@ Similarly, you can’t pass arrays by value.
 
 ### 7.3.2 String Literals
 
-The type of a string literal is ‘‘array of the appropriate number of `const` characters.
+The type of a string literal is an array of the appropriate number of `const` characters.
 
 Whether two identical string literals are allocated as one array or as two is implementation defined.
 
-The compiler will concatenate adjacent strings.
+The compiler will concatenate adjacent string literals.
 
 ### 7.3.2.1 Raw Character Strings
 
-Raw string literals use the `R"(ccc)"` notation for a sequence of characters `ccc`. The initial `R` is there to distinguish raw string literals from ordinary string literals. The parentheses are there to allow (‘‘unescaped’’) double quotes.
+Raw string literals use the `R"(ccc)"` notation for a sequence of characters `ccc`. The initial `R` is there to distinguish raw string literals from ordinary string literals. The parentheses are there to allow ("unescaped") double quotes.
 
 In contrast to nonraw string literals, a raw string literal can contain a newline.
 
@@ -61,15 +61,15 @@ The order of the `u`s and `R`s and their cases are significant: `RU` and `Ur` ar
 
 ## 7.4 Pointers into Arrays
 
-There is no way of declaring a function so that the array v is copied when the function is called. 
+There is no way of declaring a function so that the array `v` is copied when the function is called. 
 
 ### 7.4.1 Navigating Arrays
 
-When an arithmetic operator is applied to a pointer `p` of type `T∗`, `p` is assumed to point to an element of an array of objects of type `T`; `p+1` points to the next element of that array, and `p−1` points to the previous element.
+When an arithmetic operator is applied to a pointer `p` of type `T*`, `p` is assumed to point to an element of an array of objects of type `T`; `p+1` points to the next element of that array, and `p-1` points to the previous element.
 
 Arrays are not self-describing because the number of elements of an array is not guaranteed to be stored with the array.
 
-## Pointers and const
+## 7.5 Pointers and const
 
 Basically, `constexpr`’s role is to enable and ensure compile-time evaluation, whereas `const`’s primary role is to specify immutability in interfaces.
 
@@ -77,7 +77,7 @@ Because an object declared `const` cannot be assigned to, it must be initialized
 
 Note that `const` modifies a type.
 
-To declare a pointer itself, rather than the object pointed to, to be a constant, we use the declarator operator `∗const` instead of plain `∗`. 
+To declare a pointer itself, rather than the object pointed to, to be a constant, we use the declarator operator `*const` instead of plain `*`. 
 
 There is no `const∗` declarator operator, so a `const` appearing before the `∗` is taken to be part of the base type.
 
@@ -89,7 +89,6 @@ It is usually a good idea to immediately place a pointer that represents ownersh
 
 ## 7.7 References
 
-```text
 Using a pointer differs from using the name of an object in a few ways:
 
 -  We use a different syntax, for example, `*p` instead of `obj` and `p->m` rather than `obj.m`.
@@ -101,4 +100,53 @@ These differences can be annoying; for example, some programmers find `f(&x)` ug
 - You access a reference with exactly the same syntax as the name of an object.
 - A reference always refers to the object to which it was initialized.
 - There is no “null reference,” and we may assume that a reference refers to an object.
-```
+
+
+There are three kinds of references:
+
+- lvalue references: to refer to objects whose value we want to change
+- `const` references: to refer to objects whose value we do not want to change, e.g., a constant
+- rvalue references: to refer to objects whose value we do not need to preserve after we have used it, e.g., a temporary
+
+Collectively, they are called references. The first two are both called lvalue references.
+
+### 7.7.1 Lvalue References
+
+To ensure that a reference is a name for something, we must initialize the reference.
+
+Despite appearances, no operator operates on a reference.
+
+The initializer for a "plain" `T&` must be an lvalue of type `T`.
+
+The initializer for a `const T&` need not be an `lvalue` or even of type `T`. In such cases:
+- First, implicit type conversion to `T` is applied if necessary.
+- Then, the resulting value is placed in a temporary variable of type `T`.
+- Finally, this temporary variable is used as the value of the initializer.
+
+The semantics of argument passing are defined to be those of initialization.
+
+### 7.7.2 Rvalue References
+
+An rvalue reference refers to a temporary object, which the user of the reference can (and typically will) modify, assuming that the object will never be used again.
+
+The `&&` declarator operator means "rvalue reference."
+
+We do not use `const` rvalue references; most of the benefits from using rvalue references involve writing to the object to which it refers.
+
+The standard library provides a `move()` function: `move(x)` means `static_cast<X&&>(x)`.
+
+Since `move(x)` does not move `x` (it simply produces an rvalue reference to `x`), it would have been better if `move()` had been called `rval()`, but by now `move()` has been used for years.
+
+### 7.7.3 References to References
+
+lvalue reference refers to an lvalue.
+
+If you need to change which object to refer to, use a pointer.
+
+If you want to be sure that a name always refers to the same object, use a reference.
+
+If you want to use a user-defined (overloaded) operator on something that refers to an object, use a reference.
+
+A reference is not an object.
+
+If you need a notion of ‘‘no value,’’ pointers offer `nullptr`.
