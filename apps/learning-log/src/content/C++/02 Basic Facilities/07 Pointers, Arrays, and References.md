@@ -141,6 +141,8 @@ Since `move(x)` does not move `x` (it simply produces an rvalue reference to `x`
 
 lvalue reference refers to an lvalue.
 
+### 7.7.4 Pointers and References
+
 If you need to change which object to refer to, use a pointer.
 
 If you want to be sure that a name always refers to the same object, use a reference.
