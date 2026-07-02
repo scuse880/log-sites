@@ -104,3 +104,38 @@ It is possible to specify an in-class initializer for at most one member. If so,
 ### 8.3.2 Anonymous unions
 
 Note that the `union` in the declaration of `Entry2` is not named. That makes it an anonymous union. An anonymous `union` is an object, not a type, and its members can be accessed without mentioning an object name. That means that we can use members of an anonymous `union` exactly as we use other members of a class – as long as we remember that `union` members really can be used only one at a time.
+
+## 8.4 Enumerations
+
+An enumeration is a type that can hold a set of integer values specified by the user. Some of an enumeration’s possible values are named and called enumerators.
+
+This defines an enumeration called `Color` with the enumerators `red`, `green`, and `blue`. "An enumeration" is colloquially shortened to "an `enum`."
+
+There are two kinds of enumerations:
+1. `enum class`es, for which the enumerator names (e.g., `red`) are local to the `enum` and their values do not implicitly convert to other types
+2. "Plain `enum`s," for which the enumerator names are in the same scope as the `enum` and their values implicitly convert to integers
+
+### 8.4.1 enum classes
+
+The underlying type must be one of the signed or unsigned integer types; the default is `int`. We could be explicit about that:
+`enum class Warning : int { green, yellow, orange, red }; // sizeof(Warning)==sizeof(int)`
+
+A human might notice that `yellow` was missing, and a compiler might issue a warning because only three out of four `Warning` values are handled in a switch statement.
+
+An `enum` is a user-defined type, so we can define the `|` and `&` operators for it.
+
+It is possible to declare an `enum class` without defining it until later.
+
+A value of integral type may be explicitly converted to an enumeration type. The result of such a conversion is undefined unless the value is within the range of the enumeration’s underlying type.
+
+The `sizeof` of an `enum class` is the `sizeof` of its underlying type.
+
+### 8.4.2 Plain enums
+
+The enumerators of a plain `enum` are exported into the `enum`’s scope(enclosing scope), and they implicitly convert to values of some integer type.
+
+You can specify the underlying type of a plain enumeration, just as you can for `enum class`es. If you do, you can declare the enumerations without defining them until later.
+
+If you don’t specify the underlying type, you can’t declare the `enum` without defining it.
+
+The `sizeof` of an enumeration is the `sizeof` of its underlying type. If the underlying type isn't explicitly specified, it is some integral type that can hold its range and not larger than `sizeof(int)`, unless an enumerator cannot be represented as an `int` or as an `unsigned int`.
