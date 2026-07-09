@@ -7,9 +7,7 @@ date: 2026-07-06
 
 ### 10.2.1 The Parser
 
-C++ provides assignment operators for the binary operators.
-
-For a binary operator `@` applied to operands of built-in types, an expression `x@=y` means `x=x@y`, except that `x` is evaluated once only.
+C++ provides assignment operators for the binary operators. For a binary operator `@` applied to operands of built-in types, an expression `x@=y` means `x=x@y`, except that `x` is evaluated once only.
 
 ### 10.2.2 Input
 
@@ -67,9 +65,7 @@ A constant expression is an expression that a compiler can evaluate. It cannot u
 
 If the initializer for a `constexpr` can't be evaluated at compile time, the compiler will give an error.
 
-The condition of a `?:` is evaluated and then the selected alternative is evaluated. The alternative not selected is not evaluated and might even not be a constant expression.
-
-This feature is primarily useful in `constexpr` functions that are sometimes used as constant expressions and sometimes not.
+The condition of a `?:` is evaluated and then the selected alternative is evaluated. The alternative not selected is not evaluated and might even not be a constant expression. This feature is primarily useful in `constexpr` functions that are sometimes used as constant expressions and sometimes not.
 
 ### 10.4.1 Symbolic Constants
 
@@ -86,3 +82,35 @@ A class with a `constexpr` constructor is called a literal type.
 To be simple enough to be `constexpr`, a constructor must have an empty body and all members must be initialized by potentially constant expressions.
 
 We can define `constexpr` functions to take arguments of literal types.
+
+### 10.4.4 Reference Arguments
+
+When working with `constexpr`, the key thing to remember is that `constexpr` is all about values.
+
+### 10.4.5 Address Constant Expressions
+
+The address of a named variable is a constant.
+
+## 10.5 Implicit Type Conversion
+
+A conversion is value-preserving if you can convert a value and then convert the result back to its original type and get the original value. If a conversion cannot do that, it is a narrowing conversion.
+
+### 10.5.1 Promotions
+
+The implicit conversions that preserve values are commonly referred to as promotions. Before an arithmetic operation is performed, integral promotion is used to create `int`s out of shorter integer types.
+
+### 10.5.2 Conversions
+
+### 10.5.2.3 Pointer and Reference Conversions
+
+Any pointer to an object type can be implicitly converted to a `void*`. A pointer or reference to a derived class can be implicitly converted to a pointer or reference to an accessible and unambiguous base. Note that a pointer to function or a pointer to member cannot be implicitly converted to a `void*`.
+
+A `T*` can be implicitly converted to a `const T*`. Similarly, a `T&` can be implicitly converted to a `const T&`.
+
+### 10.5.2.5 Boolean Conversions
+
+Pointer, integral, and floating-point values can be implicitly converted to `bool`. A nonzero value converts to `true`; a zero value converts to `false`.
+
+### 10.5.2.6 Floating-Integral Conversions
+
+When a floating-point value is converted to an integer value, the fractional part is discarded. The behavior is undefined if the truncated value cannot be represented in the destination type.
