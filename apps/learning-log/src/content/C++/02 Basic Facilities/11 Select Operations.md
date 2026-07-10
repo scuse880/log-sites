@@ -26,9 +26,8 @@ In addition, one branch may be a throw-expression.
 
 ### 11.1.4 Increment and Decrement
 
-`y = ++x` is equivalent to `y = (x = x + 1)`.
+`y=++x` is equivalent to `y=(x=x+1)`. `y=x++` is equivalent to `y=(t=x,x=x+1,t)`, where `t` is a variable of the same type as `x`.
 
-`y = x++` is equivalent to `y = (t = x, x = x + 1, t)`, where `t` is a variable of the same type as `x`.
 
 ## 11.2 Free Store
 
