@@ -124,3 +124,7 @@ An unqualified list is used where an expected type is unambiguously known. It ca
 * A subscript
 
 When used as the initializer for a named object without the use of `=`, an unqualified `{}`-list performs direct initialization. In all other cases, it performs copy initialization.
+
+The type of a `{}`-list can be deduced (only) if all elements are of the same type.
+
+We do not deduce the type of an unqualified list for a plain template argument. Similarly, we do not deduce the element type of a container represented as a template.
