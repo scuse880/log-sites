@@ -128,3 +128,43 @@ When used as the initializer for a named object without the use of `=`, an unqua
 The type of a `{}`-list can be deduced (only) if all elements are of the same type.
 
 We do not deduce the type of an unqualified list for a plain template argument. Similarly, we do not deduce the element type of a container represented as a template.
+
+## 11.4 Lambda Expressions
+
+A lambda expression, sometimes also referred to as a lambda function or, strictly speaking incorrectly but colloquially, as a "lambda," is a simplified notation for defining and using an anonymous function object.
+
+The notion of "capture" of local variables is not provided for functions. This implies that a lambda can act as a local function even though a function cannot.
+
+### 11.4.1 Implementation Model
+
+Should you want to modify the state of a lambda from its body, the lambda can be declared `mutable`.
+
+An object of a class generated from a lambda is called a closure object, or simply a closure.
+
+### 11.4.2 Alternatives to Lambdas
+
+Naming the lambda is often a good idea. Doing so forces us to consider the design of the operation a bit more carefully. It also simplifies code layout and allows for recursion.
+
+The performance of a lambda as an argument to a traversal algorithm is equivalent, typically identical, to that of the equivalent loop. I have found that to be quite consistent across implementations and platforms. The implication is that we have to base our choice between "algorithm plus lambda" and "for-statement with body" on stylistic grounds and on estimates of extensibility and maintainability.
+
+### 11.4.3 Capture
+
+The main use of lambdas is for specifying code to be passed as arguments. Lambdas allow that to be done "inline" without having to name a function or function object and use it elsewhere.
+
+Note that a local name preceded by `&` is always captured by reference and a local name not preceded by `&` is always captured by value.
+
+The choice between capturing by value and by reference is basically the same as the choice for function arguments.
+
+When passing a lambda to another thread, capturing by value, `[=]`, is typically best: accessing another thread's stack through a reference or a pointer can be most disruptive to performance or correctness, and trying to access the stack of a terminated thread can lead to extremely difficult-to-find errors.
+
+### 11.4.3.1 Lambda and Lifetime
+
+If a lambda might outlive its caller, we must make sure that all local information, if any, is copied into the closure object and that values are returned through the return mechanism or through suitable arguments.
+
+### 11.4.3.2 Namespace Names
+
+We don't need to "capture" namespace variables, including global variables, because they are always accessible, provided they are in scope.
+
+### 11.4.3.3 Lambda and `this`
+
+Members are always captured by reference. That is, `[this]` implies that members are accessed through `this` rather than copied into the lambda.
