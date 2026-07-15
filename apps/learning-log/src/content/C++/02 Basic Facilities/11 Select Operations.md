@@ -173,15 +173,14 @@ Members are always captured by reference. That is, `[this]` implies that members
 
 For logical and historical reasons, C++ offers explicit type conversion operations of varying convenience and safety:
 
-* Construction, using the `{}` notation, providing type-safe construction of new values
-* Named conversions, providing conversions of various degrees of nastiness:
-
-  * `const_cast` for getting write access to something declared `const`
-  * `static_cast` for reversing a well-defined implicit conversion
-  * `reinterpret_cast` for changing the meaning of bit patterns
-  * `dynamic_cast` for dynamically checked class hierarchy navigation
-* C-style casts, providing any of the named conversions and some combinations of those
-* Functional notation, providing a different notation for C-style casts
+- Construction, using the `{}` notation, providing type-safe construction of new values
+- Named conversions, providing conversions of various degrees of nastiness:
+    - `const_cast` for getting write access to something declared `const`
+    - `static_cast` for reversing a well-defined implicit conversion
+    - `reinterpret_cast` for changing the meaning of bit patterns
+    - `dynamic_cast` for dynamically checked class hierarchy navigation
+- C-style casts, providing any of the named conversions and some combinations of those
+- Functional notation, providing a different notation for C-style casts
 
 ### 11.5.1 Construction
 
@@ -199,10 +198,10 @@ Explicit type conversion, often called casting, is occasionally essential. Howev
 
 The fundamental idea behind the named casts is to make type conversion more visible and to allow the programmer to express the intent of a cast:
 
-* `static_cast` converts between related types, such as one pointer type to another in the same class hierarchy, an integral type to an enumeration, or a floating-point type to an integral type. It also performs conversions defined by constructors and conversion operators.
-* `reinterpret_cast` handles conversions between unrelated types, such as an integer to a pointer or a pointer to an unrelated pointer type.
-* `const_cast` converts between types that differ only in `const` and `volatile` qualifiers.
-* `dynamic_cast` performs run-time-checked conversions of pointers and references within a class hierarchy.
+- `static_cast` converts between related types, such as one pointer type to another in the same class hierarchy, an integral type to an enumeration, or a floating-point type to an integral type. It also performs conversions defined by constructors and conversion operators.
+- `reinterpret_cast` handles conversions between unrelated types, such as an integer to a pointer or a pointer to an unrelated pointer type.
+- `const_cast` converts between types that differ only in `const` and `volatile` qualifiers.
+- `dynamic_cast` performs run-time-checked conversions of pointers and references within a class hierarchy.
 
 These distinctions among the named casts allow the compiler to apply some minimal type checking and make it easier for a programmer to find the more dangerous conversions represented as `reinterpret_cast`s. Some `static_cast`s are portable, but few `reinterpret_cast`s are. Hardly any guarantees are made for `reinterpret_cast`, but generally it produces a value of a new type that has the same bit pattern as its argument. If the target has at least as many bits as the original value, we can `reinterpret_cast` the result back to its original type and use it. The result of a `reinterpret_cast` is guaranteed to be usable only if it is converted back to the exact original type. Note that `reinterpret_cast` is the kind of conversion that must be used for pointers to functions.
 
