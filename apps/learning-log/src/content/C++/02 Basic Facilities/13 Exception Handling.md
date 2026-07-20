@@ -46,3 +46,15 @@ Remember that memory isn't the only kind of resource that can leak. Files, locks
 The destructor will be called independently of whether the function is exited normally or exited because an exception is thrown. That is, the exception-handling mechanisms enable us to remove the error-handling code from the main algorithm.
 
 This technique for managing resources using local objects is usually referred to as "Resource Acquisition Is Initialization" (RAII). This is a general technique that relies on the properties of constructors and destructors and their interaction with exception handling.
+
+## 13.4 Enforcing Invariants
+
+When we want to be neutral about the logical reason for the check, we typically use the word assertion, often abbreviated to an `assert`.
+
+It is possible to control the testing done and the response to testing through build options (e.g., controlling conditional compilation) and/or through options in the program code.
+
+I personally favor leaving at least some tests in the final (shipping) version of a program.
+
+Only the builder of the final complete system can decide whether a failure is acceptable or not. The writer of a library or reusable component usually does not have the luxury of terminating unconditionally. I interpret that to mean that for general library code, reporting an error - preferably by throwing an exception - is essential.
+
+As usual, destructors should not throw, so don't use a throwing `Assert()` in a destructor.
