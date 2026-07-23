@@ -141,3 +141,11 @@ If the exception-handling implementation catches you doing either, it will termi
 A terminate handler cannot return to its caller. If it tries to, `terminate()` will call `abort()`. Note that `abort()` indicates abnormal exit from the program. The function `exit()` can be used to exit a program with a return value that indicates to the surrounding system whether the exit is normal or abnormal.
 
 When an exception is caught, the exact point where it was thrown is generally not known.
+
+## 13.6 A Vector Implementation
+
+### 13.6.4.4 Final Thoughts
+
+The basic rule of ordering is not to destroy information before its replacement has been constructed and can be assigned without the possibility of an exception.
+
+I conjecture that the effectiveness of the ordering approach and the RAII approach compared to more extensive use of try-blocks stems from the simplification of the local control flow. Simple, stylized code is easier to understand, easier to get right, and easier to generate good code for.
