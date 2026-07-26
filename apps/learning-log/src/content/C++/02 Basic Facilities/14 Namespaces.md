@@ -35,10 +35,6 @@ If a function isn't found in the context of its use, we look in the namespaces o
 
 You can add names to it from several separate namespace declarations.
 
----
-
-## title: 14.4 Composition Using Namespaces
-
 ## 14.4 Composition Using Namespaces
 
 ### 14.4.1 Convenience vs. Safety

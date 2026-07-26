@@ -68,3 +68,29 @@ The intent of the ODR is to allow inclusion of a class definition in different t
 ### 15.2.4 Standard-Library Headers
 
 For each C standard-library header `<X.h>`, there is a corresponding standard C++ header `<cX>`.
+
+### 15.2.5 Linkage to Non-C++ Code
+
+One can specify a linkage convention to be used in an `extern` declaration.
+
+An `extern "C"` directive specifies the linkage convention only and does not affect the semantics of calls to the function. In particular, a function declared `extern "C"` still obeys the C++ type-checking and argument conversion rules and not the weaker C rules.
+
+This construct, commonly called a linkage block, can be used to enclose a complete C header to make a header suitable for C++ use.
+
+## 15.3 Using Header Files
+
+### 15.3.2 Multiple-Header Organization
+
+The simple fact is that maintenance of code is invariably done with incomplete information and from a local perspective. The multiple-header organization allows us to work successfully "from the inside out" with only a local perspective.
+
+### 15.3.3 Include Guards
+
+Viewed from the program as a whole, many of the declarations needed to make each logical module complete are redundant. For larger programs, such redundancy can lead to errors, as a header containing class definitions or inline functions gets `#include`d twice in the same compilation unit. We also need that redundancy to make the individual parts of the program comprehensible in isolation. The traditional solution is to insert include guards in headers.
+
+## 15.4 Programs
+
+### 15.4.1 Initialization of Nonlocal Variables
+
+In principle, a variable defined outside any function (that is, global, namespace, and class static variables) is initialized before `main()` is invoked.
+
+The initialization of nonlocal (statically allocated) variables is controlled by whatever mechanism an implementation uses to start up a C++ program. This mechanism is guaranteed to work properly only if `main()` is executed.
