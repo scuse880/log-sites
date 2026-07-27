@@ -1,8 +1,7 @@
 ---
-
 title: 16 Classes
 date: 2026-07-27
-----------------
+---
 
 ## 16.2 Class Basics
 
