@@ -129,3 +129,24 @@ In particular, move operations typically do not throw exceptions; they don't acq
 How does the compiler know when it can use a move operation rather than a copy operation? In a few cases, such as for a return value, the language rules say that it can (because the next action is defined to destroy the element). However, in general, we have to tell it by giving an rvalue reference argument.
 
 The `move()` is a standard-library function returning an rvalue reference to its argument.
+
+## 17.6 Generating Default Operations
+
+* If the programmer declares any constructor for a class, the default constructor is not generated for that class.
+* If the programmer declares a copy operation, a move operation, or a destructor for a class, no copy operation, move operation, or destructor is generated for that class.
+
+Unfortunately, the second rule is only incompletely enforced: for backward compatibility, copy constructors and copy assignments are generated even if a destructor is defined. However, that generation is deprecated in the ISO standard, and you should expect a modern compiler to warn against it.
+
+### 17.6.2 Default Operations
+
+The default meaning of each generated operation, as implemented when the compiler generates it, is to apply the operation to each base and non-static data member of the class.
+
+### 17.6.4 Deleted Functions
+
+We can `delete` a function.
+
+The most obvious use is to eliminate otherwise defaulted functions.
+
+We can eliminate a specialization from the set of possible specializations of a function template:
+
+Another application is to eliminate an undesired conversion.
