@@ -11,19 +11,7 @@ Casting from a base class to a derived class is often called a downcast.
 
 `dynamic_cast<T*>(p)` looks at the object pointed to by `p` (if any). If that object is of class `T` or has a unique base class of type `T`, then `dynamic_cast` returns a pointer of type `T*` to that object; otherwise, `nullptr` is returned.
 
-A `dynamic_cast` requires a pointer or a reference to a polymorphic type in order to do a downcast or a crosscast.
-
 A `dynamic_cast` to `void*` can be used to determine the address of the beginning of an object of polymorphic type.
-
-There is no `dynamic_cast` from `void*` (because there would be no way of knowing where to find the `vptr`).
-
-### 22.2.1.1 dynamic_cast to Reference
-
-The result of a `dynamic_cast` for a reference is implicitly tested by the implementation of `dynamic_cast` itself. If the operand of a `dynamic_cast` to a reference isn't of the expected type, a `bad_cast` exception is thrown.
-
-### 22.2.3 static_cast and dynamic_cast
-
-Where possible, use the safer `dynamic_cast`.
 
 ## 22.3 Double Dispatch and Visitors
 
