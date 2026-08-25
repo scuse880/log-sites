@@ -5,11 +5,7 @@ date: 2026-08-25
 
 ## 24.1 Introduction
 
-The type checking provided for templates checks the use of arguments in the template definition
-rather than against an explicit interface (in a template declaration).
-
-A key aspect of generic programming, metaprogramming, and probably all uses of templates is
-the uniform handling of built-in types and user-defined types.
+Templates are type-checked based on how their arguments are used, and generic programming aims to handle built-in and user-defined types uniformly.
 
 ## 24.2 Algorithms and Lifting
 
