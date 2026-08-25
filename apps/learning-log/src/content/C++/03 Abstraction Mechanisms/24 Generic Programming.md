@@ -21,11 +21,4 @@ What we need to do is to identify a small number of concepts (sets of requiremen
 
 ## 24.4 Making Concepts Concrete
 
-A concept is a predicate; that is, we think of a concept as a compile-time function that looks at a
-set of template arguments and returns true if they meet the concept’s requirements and false if they
-don’t. So, we implement a concept as a `constexpr` function.
-
-Here, I will use the term constraints
-check to refer to a call of a `constexpr` predicate that checks a concept for a set of types and values.
-In contrast to proper concepts, a constraints check does not deal with semantic issues; it simply
-checks assumptions about syntactic properties.
+A concept is a compile-time predicate that checks whether a set of template arguments meets its requirements.
