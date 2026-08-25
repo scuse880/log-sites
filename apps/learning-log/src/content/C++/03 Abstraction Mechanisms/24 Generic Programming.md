@@ -15,6 +15,8 @@ the uniform handling of built-in types and user-defined types.
 
 lifting a general algorithm from specific functions.
 
+## 24.3 Concepts
+
 ## 24.4 Making Concepts Concrete
 
 A concept is a predicate; that is, we think of a concept as a compile-time function that looks at a
