@@ -17,6 +17,8 @@ lifting a general algorithm from specific functions.
 
 ## 24.3 Concepts
 
+What we need to do is to identify a small number of concepts (sets of requirements) that can be used for many templates and many types as arguments.
+
 ## 24.4 Making Concepts Concrete
 
 A concept is a predicate; that is, we think of a concept as a compile-time function that looks at a
