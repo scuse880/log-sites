@@ -7,7 +7,7 @@ date: 2026-08-28
 
 ### 25.2.1 Types as Arguments
 
-A template parameter is defined to be a type parameter by prefixing it with `typename` or `class`. The result of using either is completely equivalent.
+A template argument is defined to be a type parameter by prefixing it with `typename` or `class`. The result of using either is completely equivalent.
 
 ### 25.2.5.1 Default Function Template Arguments
 
