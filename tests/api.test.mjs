@@ -66,7 +66,7 @@ async function fixture(t, { now, dev = false } = {}) {
     script: await bundle(now, dev),
     compatibilityDate: '2026-10-23',
     bindings: { UPLOAD_SECRET: password },
-    d1Databases: ['DB'],
+    d1Databases: ['MY_DB'],
     r2Buckets: ['MY_BUCKET'],
     resourcePersistencePath: directory,
     unsafeTriggerHandlers: true,
@@ -86,7 +86,7 @@ async function fixture(t, { now, dev = false } = {}) {
     await rm(resolved, { recursive: true, force: true });
   });
   async function bindings() {
-    f.db = await f.mf.getD1Database('DB');
+    f.db = await f.mf.getD1Database('MY_DB');
     f.bucket = await f.mf.getR2Bucket('MY_BUCKET');
   }
   await bindings();

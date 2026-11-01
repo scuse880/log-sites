@@ -83,15 +83,15 @@ npm test
 | --- | --- | --- |
 | R2 저장소 | `MY_BUCKET` | 실제 버킷 `logsites-files`에 연결 |
 | 관리자 비밀번호 | `UPLOAD_SECRET` | Pages의 암호화된 비밀값 사용 |
-| D1 데이터베이스 | `DB` | 별도 생성·연결 필요, 권장 이름 `learning-log-files` |
+| D1 데이터베이스 | `MY_DB` | 실제 데이터베이스 `logsite-files`에 연결 |
 
 `MY_BUCKET`은 바인딩 이름이며 실제 R2 버킷 이름은 `logsites-files`입니다. 코드에는 비밀번호 값을 넣지 않습니다. 로컬 `.dev.vars`의 비밀번호와 Pages의 운영 비밀번호는 별도로 관리합니다.
 
-현재 운영 D1은 아직 생성하지 않았습니다. R2와 비밀번호만으로는 자료실이 동작하지 않습니다. D1에 파일 목록, 정렬 순서, 관리자 세션, 업로드 제한 정보를 저장하기 때문입니다.
+운영 D1 `logsite-files`는 생성된 상태입니다. 데이터베이스를 만든 뒤에는 초기 테이블도 준비해야 합니다. D1에는 파일 목록, 정렬 순서, 관리자 세션, 업로드 제한 정보를 저장합니다. 로컬 `setup:local`은 운영 DB에 스키마를 적용하지 않습니다.
 
-1. D1 데이터베이스를 만들고 Pages의 D1 바인딩 이름을 `DB`로 연결합니다.
-2. 운영 DB에 `migrations/0001_files.sql`을 적용합니다. 이미 만든 테이블이 있는 DB에 초기 스키마를 반복 실행하지 않습니다.
-3. Pages의 R2 바인딩 `MY_BUCKET` → `logsites-files`와 비밀값 `UPLOAD_SECRET`이 배포할 환경에 설정되어 있는지 확인합니다.
+1. Pages의 D1 바인딩 이름 `MY_DB`가 생성한 `logsite-files` 데이터베이스를 가리키는지 확인합니다.
+2. 운영 DB에 `migrations/0001_files.sql`을 한 번 적용합니다. D1 콘솔에서 실행하거나, Cloudflare에 로그인한 Wrangler로 SQL 파일을 적용합니다. 이 작업의 원격 실행 여부는 아직 확인하지 않았습니다.
+3. Pages의 R2 바인딩 `MY_BUCKET` → `logsites-files`와 비밀값 `UPLOAD_SECRET`이 배포할 환경에 설정되어 있는지 확인합니다. R2 이름은 `logsites-files`, D1 이름은 `logsite-files`로 서로 다릅니다.
 4. Pages 빌드 루트는 저장소 루트(`.` 또는 빈 값), 빌드 명령은 `npm run build`, 출력 폴더는 `dist`로 설정합니다. 이전 `apps/learning-log` 경로는 사용하지 않습니다. 루트 `functions`도 포함해 재배포해야 자료실 API가 제공됩니다.
 5. 중단된 업로드를 정리하려면 `wrangler.cleanup.example.jsonc`를 별도 설정으로 복사하고 실제 D1 ID와 동일한 R2 버킷을 연결해 정리 Worker를 배포합니다. 예제는 15분 주기입니다.
 

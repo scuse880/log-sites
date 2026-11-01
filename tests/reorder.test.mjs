@@ -9,14 +9,14 @@ async function fixture(t) {
     modules: true,
     script: 'export default { fetch() { return new Response("test"); } };',
     compatibilityDate: '2026-10-23',
-    d1Databases: ['DB'],
+    d1Databases: ['MY_DB'],
     cf: false,
     log: new Log(LogLevel.ERROR),
     telemetry: { enabled: false },
   });
   const mf = new Miniflare(options);
   t.after(() => mf.dispose());
-  const db = await mf.getD1Database('DB');
+  const db = await mf.getD1Database('MY_DB');
   const schema = await readFile(new URL('../migrations/0001_files.sql', import.meta.url), 'utf8');
   let statement = '';
   for (const line of schema.split(/\r?\n/)) {

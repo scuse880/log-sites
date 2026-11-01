@@ -20,7 +20,7 @@ try {
 
 const migrated = spawnSync(process.execPath, [
   path.join(root, 'node_modules/wrangler/bin/wrangler.js'),
-  'd1', 'migrations', 'apply', 'learning-log-files', '--local', '--config', 'wrangler.dev.jsonc',
+  'd1', 'migrations', 'apply', 'logsite-files', '--local', '--config', 'wrangler.dev.jsonc',
 ], { cwd: root, stdio: 'inherit', windowsHide: true });
 if (migrated.error) throw migrated.error;
 if (migrated.status !== 0) process.exit(migrated.status ?? 1);

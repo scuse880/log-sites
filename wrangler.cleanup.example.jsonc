@@ -6,8 +6,8 @@
   "workers_dev": false,
   "triggers": { "crons": ["*/15 * * * *"] },
   "d1_databases": [{
-    "binding": "DB",
-    "database_name": "learning-log-files",
+    "binding": "MY_DB",
+    "database_name": "logsite-files",
     "database_id": "REPLACE_WITH_LEARNING_LOG_DATABASE_ID"
   }],
   "r2_buckets": [{ "binding": "MY_BUCKET", "bucket_name": "logsites-files" }]

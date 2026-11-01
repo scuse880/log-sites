@@ -1,7 +1,7 @@
 import { reorderOne } from './reorder';
 
 export interface Env {
-  DB: D1Database;
+  MY_DB: D1Database;
   MY_BUCKET: R2Bucket;
   UPLOAD_SECRET: string;
 }
@@ -64,7 +64,7 @@ function sameOrigin(request: Request) {
 }
 async function rate(env: Env, key: string, limit: number, windowMs: number, now: number) {
   const bucket = Math.floor(now / windowMs);
-  const result = await env.DB.prepare(`INSERT INTO rate_limits(key,hits,expires_at) VALUES(?,1,?)
+  const result = await env.MY_DB.prepare(`INSERT INTO rate_limits(key,hits,expires_at) VALUES(?,1,?)
     ON CONFLICT(key) DO UPDATE SET hits=hits+1 WHERE hits < ? RETURNING hits`)
     .bind(`${key}:${bucket}`, (bucket + 1) * windowMs, limit).first<{ hits: number }>();
   if (!result) fail(429, '요청이 많습니다. 잠시 후 다시 시도하세요.', 'rate_limit');
@@ -73,9 +73,9 @@ async function getSession(request: Request, env: Env, now: number): Promise<Sess
   const raw = request.headers.get('Cookie')?.split(';').map(c => c.trim()).find(c => c.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
   if (!raw || !/^[a-f0-9]{64}$/.test(raw)) return null;
   const key = await hash(raw);
-  const s = await env.DB.prepare('SELECT * FROM sessions WHERE token_hash=?').bind(key).first<Session>();
+  const s = await env.MY_DB.prepare('SELECT * FROM sessions WHERE token_hash=?').bind(key).first<Session>();
   if (!s) return null;
-  if (effectiveExpiry(s) <= now) { await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(key).run(); return null; }
+  if (effectiveExpiry(s) <= now) { await env.MY_DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(key).run(); return null; }
   return s;
 }
 async function requireSession(request: Request, env: Env, now: number, mutate = false) {
@@ -86,14 +86,14 @@ async function requireSession(request: Request, env: Env, now: number, mutate = 
     if (request.headers.get('X-CSRF-Token') !== s.csrf_token) fail(403, '인증 정보가 일치하지 않습니다. 새로 로그인하세요.', 'csrf');
     await rate(env, `write:${s.token_hash}`, 90, 60_000, now);
     // Only explicit authenticated activity extends the idle window. Polling never does.
-    const updated = await env.DB.prepare('UPDATE sessions SET last_active=? WHERE token_hash=? AND expires_at>? AND (mode=\'private\' OR last_active>?) RETURNING *').bind(now, s.token_hash, now, now - IDLE).first<Session>();
+    const updated = await env.MY_DB.prepare('UPDATE sessions SET last_active=? WHERE token_hash=? AND expires_at>? AND (mode=\'private\' OR last_active>?) RETURNING *').bind(now, s.token_hash, now, now - IDLE).first<Session>();
     if (!updated) fail(401, '세션이 만료되었습니다.', 'unauthorized');
     return updated;
   }
   return s;
 }
 async function upload(env: Env, id: string) {
-  const value = await env.DB.prepare('SELECT * FROM uploads WHERE id=?').bind(id).first<Upload>();
+  const value = await env.MY_DB.prepare('SELECT * FROM uploads WHERE id=?').bind(id).first<Upload>();
   if (!value) fail(404, '파일 또는 업로드를 찾을 수 없습니다.');
   return value;
 }
@@ -110,24 +110,24 @@ async function removeObject(env: Env, value: Upload) {
   }
   await env.MY_BUCKET.delete(value.object_key);
   // Release reservations only after storage cleanup has succeeded.
-  await env.DB.prepare("DELETE FROM uploads WHERE id=? AND state IN ('aborting','deleting')").bind(value.id).run();
+  await env.MY_DB.prepare("DELETE FROM uploads WHERE id=? AND state IN ('aborting','deleting')").bind(value.id).run();
 }
 export async function cleanup(env: Env, now = Date.now()) {
   // Bound combined D1 + R2 subrequests below the Free plan's per-invocation limits.
-  const stale = await env.DB.prepare("SELECT * FROM uploads WHERE (state IN ('pending','completing') AND expires_at<=?) OR state IN ('aborting','deleting') ORDER BY expires_at LIMIT 8").bind(now).all<Upload>();
+  const stale = await env.MY_DB.prepare("SELECT * FROM uploads WHERE (state IN ('pending','completing') AND expires_at<=?) OR state IN ('aborting','deleting') ORDER BY expires_at LIMIT 8").bind(now).all<Upload>();
   for (const value of stale.results) {
-    const claimed = await env.DB.prepare("UPDATE uploads SET state=CASE WHEN committed=1 THEN 'deleting' ELSE 'aborting' END WHERE id=? AND ((state IN ('pending','completing') AND expires_at<=?) OR state IN ('aborting','deleting')) RETURNING id").bind(value.id, now).first();
+    const claimed = await env.MY_DB.prepare("UPDATE uploads SET state=CASE WHEN committed=1 THEN 'deleting' ELSE 'aborting' END WHERE id=? AND ((state IN ('pending','completing') AND expires_at<=?) OR state IN ('aborting','deleting')) RETURNING id").bind(value.id, now).first();
     if (claimed) { try { await removeObject(env, value); } catch { /* Keep accounting intact and retry next scheduled sweep. */ } }
   }
-  await env.DB.batch([
-    env.DB.prepare("DELETE FROM sessions WHERE expires_at<=? OR (mode='public' AND last_active<=?)").bind(now, now - IDLE),
-    env.DB.prepare('DELETE FROM rate_limits WHERE expires_at<=?').bind(now),
-    env.DB.prepare('DELETE FROM daily_usage WHERE day<? AND day NOT IN (SELECT day FROM uploads)').bind(kstDay(now - 7 * 86400000)),
+  await env.MY_DB.batch([
+    env.MY_DB.prepare("DELETE FROM sessions WHERE expires_at<=? OR (mode='public' AND last_active<=?)").bind(now, now - IDLE),
+    env.MY_DB.prepare('DELETE FROM rate_limits WHERE expires_at<=?').bind(now),
+    env.MY_DB.prepare('DELETE FROM daily_usage WHERE day<? AND day NOT IN (SELECT day FROM uploads)').bind(kstDay(now - 7 * 86400000)),
   ]);
 }
 
 async function handle(request: Request, env: Env, ctx: Context) {
-  if (!env.DB || !env.MY_BUCKET) fail(503, '파일 저장소가 아직 설정되지 않았습니다. 관리자에게 문의하세요.', 'not_configured');
+  if (!env.MY_DB || !env.MY_BUCKET) fail(503, '파일 저장소가 아직 설정되지 않았습니다. 관리자에게 문의하세요.', 'not_configured');
   const now = Date.now();
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/$/, '');
@@ -149,10 +149,10 @@ async function handle(request: Request, env: Env, ctx: Context) {
     for (let i = 0; i < expected.length; i++) different |= given.charCodeAt(i) ^ expected.charCodeAt(i);
     if (different) fail(401, '비밀번호가 올바르지 않습니다.', 'invalid_password');
     const previous = await getSession(request, env, now);
-    if (previous) await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(previous.token_hash).run();
+    if (previous) await env.MY_DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(previous.token_hash).run();
     const raw = token();
     const s: Session = { token_hash: await hash(raw), csrf_token: token(), created_at: now, last_active: now, expires_at: now + PUBLIC_LIFE, mode: 'public', preference_set: 0 };
-    await env.DB.prepare('INSERT INTO sessions(token_hash,csrf_token,created_at,last_active,expires_at,mode) VALUES(?,?,?,?,?,?)').bind(s.token_hash, s.csrf_token, now, now, s.expires_at, s.mode).run();
+    await env.MY_DB.prepare('INSERT INTO sessions(token_hash,csrf_token,created_at,last_active,expires_at,mode) VALUES(?,?,?,?,?,?)').bind(s.token_hash, s.csrf_token, now, now, s.expires_at, s.mode).run();
     return json(sessionInfo(s), 200, { 'Set-Cookie': cookie(raw) });
   }
   if (path === '/api/session' && method === 'GET') {
@@ -165,7 +165,7 @@ async function handle(request: Request, env: Env, ctx: Context) {
     const s = await getSession(request, env, now);
     if (s) {
       if (request.headers.get('X-CSRF-Token') !== s.csrf_token) fail(403, '인증 정보가 일치하지 않습니다.', 'csrf');
-      await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(s.token_hash).run();
+      await env.MY_DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(s.token_hash).run();
     }
     return json({ authenticated: false }, 200, { 'Set-Cookie': cookie('', 0) });
   }
@@ -175,26 +175,26 @@ async function handle(request: Request, env: Env, ctx: Context) {
     const data = await bodyJson(request);
     if (typeof data.remember !== 'boolean') fail(400, '로그인 유지 여부를 선택하세요.');
     if (s.preference_set || now - s.created_at > 2 * 60_000) fail(409, '로그인 유지 선택 시간이 지났습니다. 다시 로그인하세요.');
-    const updated = await env.DB.prepare('UPDATE sessions SET mode=?,expires_at=?,preference_set=1 WHERE token_hash=? AND preference_set=0 RETURNING *').bind(data.remember ? 'private' : 'public', s.created_at + (data.remember ? PRIVATE_LIFE : PUBLIC_LIFE), s.token_hash).first<Session>();
+    const updated = await env.MY_DB.prepare('UPDATE sessions SET mode=?,expires_at=?,preference_set=1 WHERE token_hash=? AND preference_set=0 RETURNING *').bind(data.remember ? 'private' : 'public', s.created_at + (data.remember ? PRIVATE_LIFE : PUBLIC_LIFE), s.token_hash).first<Session>();
     if (!updated) fail(409, '이미 로그인 유지 설정을 선택했습니다.');
     const raw = request.headers.get('Cookie')!.split(';').map(c => c.trim()).find(c => c.startsWith(`${COOKIE}=`))!.slice(COOKIE.length + 1);
     return json(sessionInfo(updated), 200, { 'Set-Cookie': cookie(raw, data.remember ? Math.max(0, Math.floor((updated.expires_at - now) / 1000)) : undefined) });
   }
   if (path === '/api/admin/usage' && method === 'GET') {
     await requireSession(request, env, now);
-    const usage = await env.DB.prepare('SELECT used_bytes,reserved_bytes FROM storage_usage WHERE id=1').first<{ used_bytes: number; reserved_bytes: number }>();
-    const daily = await env.DB.prepare('SELECT uploads FROM daily_usage WHERE day=?').bind(kstDay(now)).first<{ uploads: number }>();
+    const usage = await env.MY_DB.prepare('SELECT used_bytes,reserved_bytes FROM storage_usage WHERE id=1').first<{ used_bytes: number; reserved_bytes: number }>();
+    const daily = await env.MY_DB.prepare('SELECT uploads FROM daily_usage WHERE day=?').bind(kstDay(now)).first<{ uploads: number }>();
     return json({ usedBytes: usage!.used_bytes, reservedBytes: usage!.reserved_bytes, remainingUploads: Math.max(0, 30 - (daily?.uploads ?? 0)), dailyLimit: 30, maxFileBytes: MAX_FILE, maxTotalBytes: MAX_TOTAL });
   }
   if (path === '/api/files' && method === 'GET') {
     await rate(env, `list:${ip}`, 120, 60_000, now);
-    const revision = (await env.DB.prepare('SELECT revision FROM storage_usage WHERE id=1').first<{ revision: number }>())!.revision;
+    const revision = (await env.MY_DB.prepare('SELECT revision FROM storage_usage WHERE id=1').first<{ revision: number }>())!.revision;
     const headers = { 'Cache-Control': 'public, max-age=15, s-maxage=30', ETag: `"files-${revision}"`, 'X-Content-Type-Options': 'nosniff' };
     if (request.headers.get('If-None-Match') === headers.ETag) return new Response(null, { status: 304, headers });
     const cacheKey = new Request(`${url.origin}/api/cache/files/${revision}`);
     const cached = await caches.default.match(cacheKey);
     if (cached) return cached;
-    const result = await env.DB.prepare("SELECT id,name,size,uploaded_at AS uploadedAt FROM uploads WHERE state='ready' ORDER BY sort_order,uploaded_at,id").all();
+    const result = await env.MY_DB.prepare("SELECT id,name,size,uploaded_at AS uploadedAt FROM uploads WHERE state='ready' ORDER BY sort_order,uploaded_at,id").all();
     const response = json({ files: result.results, revision }, 200, headers);
     ctx.waitUntil(caches.default.put(cacheKey, response.clone()));
     return response;
@@ -237,21 +237,21 @@ async function handle(request: Request, env: Env, ctx: Context) {
     await cleanup(env, now);
     const id = crypto.randomUUID();
     const key = `files/${id}`;
-    await env.DB.prepare("INSERT INTO uploads(id,name,size,content_type,object_key,state,day,created_at,expires_at,session_hash) VALUES(?,?,?,?,?,'pending',?,?,?,?)").bind(id, data.name, data.size, 'application/octet-stream', key, kstDay(now), now, now + UPLOAD_LIFE, s.token_hash).run();
+    await env.MY_DB.prepare("INSERT INTO uploads(id,name,size,content_type,object_key,state,day,created_at,expires_at,session_hash) VALUES(?,?,?,?,?,'pending',?,?,?,?)").bind(id, data.name, data.size, 'application/octet-stream', key, kstDay(now), now, now + UPLOAD_LIFE, s.token_hash).run();
     let multipart: R2MultipartUpload | undefined;
     try {
       if (Number(data.size) > 0) {
         multipart = await env.MY_BUCKET.createMultipartUpload(key, { storageClass: 'Standard', httpMetadata: { contentType: 'application/octet-stream' } });
-        await env.DB.prepare('UPDATE uploads SET multipart_id=? WHERE id=?').bind(multipart.uploadId, id).run();
+        await env.MY_DB.prepare('UPDATE uploads SET multipart_id=? WHERE id=?').bind(multipart.uploadId, id).run();
       }
     } catch {
       let cleaned = !multipart;
       if (multipart) {
         try { await multipart.abort(); cleaned = true; } catch { /* Keep the reservation until cleanup succeeds. */ }
       }
-      if (cleaned) await env.DB.prepare('DELETE FROM uploads WHERE id=?').bind(id).run();
+      if (cleaned) await env.MY_DB.prepare('DELETE FROM uploads WHERE id=?').bind(id).run();
       else {
-        try { await env.DB.prepare("UPDATE uploads SET state='aborting',multipart_id=? WHERE id=?").bind(multipart!.uploadId, id).run(); }
+        try { await env.MY_DB.prepare("UPDATE uploads SET state='aborting',multipart_id=? WHERE id=?").bind(multipart!.uploadId, id).run(); }
         catch { /* Original reservation stays. The R2 lifecycle is the crash-window fallback. */ }
       }
       fail(503, '저장소에 업로드를 준비하지 못했습니다. 잠시 후 다시 시도하세요.');
@@ -268,17 +268,17 @@ async function handle(request: Request, env: Env, ctx: Context) {
     const count = Math.ceil(value.size / CHUNK);
     if (!Number.isInteger(number) || number < 1 || number > count) fail(400, '파일 조각 번호가 올바르지 않습니다.');
     const expected = Math.min(CHUNK, value.size - (number - 1) * CHUNK);
-    await env.DB.prepare("UPDATE uploads SET expires_at=? WHERE id=? AND state='pending'").bind(now + UPLOAD_LIFE, value.id).run();
+    await env.MY_DB.prepare("UPDATE uploads SET expires_at=? WHERE id=? AND state='pending'").bind(now + UPLOAD_LIFE, value.id).run();
     const bytes = await limitedBody(request, expected);
     if (bytes.byteLength !== expected) fail(400, '파일 조각 크기가 일치하지 않습니다. 다시 시도하세요.');
-    const locked = await env.DB.prepare("INSERT INTO upload_parts(upload_id,part_number) SELECT ?,? WHERE EXISTS(SELECT 1 FROM uploads WHERE id=? AND state='pending') ON CONFLICT DO NOTHING RETURNING part_number").bind(value.id, number, value.id).first();
+    const locked = await env.MY_DB.prepare("INSERT INTO upload_parts(upload_id,part_number) SELECT ?,? WHERE EXISTS(SELECT 1 FROM uploads WHERE id=? AND state='pending') ON CONFLICT DO NOTHING RETURNING part_number").bind(value.id, number, value.id).first();
     if (!locked) fail(409, '이미 전송했거나 처리 중인 파일 조각입니다.');
     try {
       const result = await env.MY_BUCKET.resumeMultipartUpload(value.object_key, value.multipart_id).uploadPart(number, bytes);
-      await env.DB.prepare('UPDATE upload_parts SET etag=? WHERE upload_id=? AND part_number=?').bind(result.etag, value.id, number).run();
+      await env.MY_DB.prepare('UPDATE upload_parts SET etag=? WHERE upload_id=? AND part_number=?').bind(result.etag, value.id, number).run();
       return json({ partNumber: number });
     } catch {
-      await env.DB.prepare('DELETE FROM upload_parts WHERE upload_id=? AND part_number=?').bind(value.id, number).run();
+      await env.MY_DB.prepare('DELETE FROM upload_parts WHERE upload_id=? AND part_number=?').bind(value.id, number).run();
       fail(503, '파일 조각 저장에 실패했습니다. 다시 시도하세요.');
     }
   }
@@ -288,9 +288,9 @@ async function handle(request: Request, env: Env, ctx: Context) {
     const value = await upload(env, finish[1]);
     if (value.state === 'ready' && value.session_hash === s.token_hash) return json({ id: value.id });
     ownUpload(value, s, now);
-    const parts = await env.DB.prepare('SELECT part_number AS partNumber,etag FROM upload_parts WHERE upload_id=? ORDER BY part_number').bind(value.id).all<{ partNumber: number; etag: string | null }>();
+    const parts = await env.MY_DB.prepare('SELECT part_number AS partNumber,etag FROM upload_parts WHERE upload_id=? ORDER BY part_number').bind(value.id).all<{ partNumber: number; etag: string | null }>();
     if (parts.results.length !== Math.ceil(value.size / CHUNK) || parts.results.some(p => !p.etag)) fail(409, '모든 파일 조각의 업로드가 끝나지 않았습니다.');
-    const claimed = await env.DB.prepare("UPDATE uploads SET state='completing',expires_at=? WHERE id=? AND state='pending' RETURNING id").bind(now + UPLOAD_LIFE, value.id).first();
+    const claimed = await env.MY_DB.prepare("UPDATE uploads SET state='completing',expires_at=? WHERE id=? AND state='pending' RETURNING id").bind(now + UPLOAD_LIFE, value.id).first();
     if (!claimed && value.state !== 'completing') fail(409, '이미 처리 중인 업로드입니다.');
     const existing = await env.MY_BUCKET.head(value.object_key);
     if (!existing) {
@@ -303,7 +303,7 @@ async function handle(request: Request, env: Env, ctx: Context) {
     }
     const stored = await env.MY_BUCKET.head(value.object_key);
     if (!stored || stored.size !== value.size) fail(503, '저장된 파일 크기를 확인하지 못했습니다.');
-    await env.DB.prepare("UPDATE uploads SET state='ready',committed=1,uploaded_at=?,sort_order=(SELECT COALESCE(MAX(sort_order),0)+1 FROM uploads WHERE state='ready') WHERE id=? AND state='completing'").bind(now, value.id).run();
+    await env.MY_DB.prepare("UPDATE uploads SET state='ready',committed=1,uploaded_at=?,sort_order=(SELECT COALESCE(MAX(sort_order),0)+1 FROM uploads WHERE state='ready') WHERE id=? AND state='completing'").bind(now, value.id).run();
     return json({ id: value.id }, 201);
   }
   const cancel = path.match(/^\/api\/uploads\/([a-f0-9-]{36})$/);
@@ -312,7 +312,7 @@ async function handle(request: Request, env: Env, ctx: Context) {
     const value = await upload(env, cancel[1]);
     if (value.session_hash !== s.token_hash || value.committed) fail(403, '취소할 수 없는 업로드입니다.');
     if (value.state === 'completing') fail(409, '저장 중인 파일입니다. 완료 후 삭제하세요.');
-    const claimed = await env.DB.prepare("UPDATE uploads SET state='aborting' WHERE id=? AND committed=0 AND state IN ('pending','aborting') RETURNING *").bind(value.id).first<Upload>();
+    const claimed = await env.MY_DB.prepare("UPDATE uploads SET state='aborting' WHERE id=? AND committed=0 AND state IN ('pending','aborting') RETURNING *").bind(value.id).first<Upload>();
     if (!claimed) fail(409, '파일 저장 상태가 변경되었습니다. 완료 후 삭제하세요.');
     await removeObject(env, claimed);
     return json({ cancelled: true });
@@ -321,12 +321,12 @@ async function handle(request: Request, env: Env, ctx: Context) {
     await requireSession(request, env, now, true);
     const data = await bodyJson(request);
     const ids = validIds(data.ids);
-    const values = await env.DB.prepare("UPDATE uploads SET state='deleting' WHERE id IN (SELECT value FROM json_each(?)) AND state IN ('ready','deleting') RETURNING *").bind(JSON.stringify(ids)).all<Upload>();
+    const values = await env.MY_DB.prepare("UPDATE uploads SET state='deleting' WHERE id IN (SELECT value FROM json_each(?)) AND state IN ('ready','deleting') RETURNING *").bind(JSON.stringify(ids)).all<Upload>();
     if (values.results.length) {
       try {
         // R2 accepts up to 1,000 keys in a single delete; SQL uses one JSON binding.
         await env.MY_BUCKET.delete(values.results.map(value => value.object_key));
-        await env.DB.prepare("DELETE FROM uploads WHERE id IN (SELECT value FROM json_each(?)) AND state='deleting'").bind(JSON.stringify(values.results.map(value => value.id))).run();
+        await env.MY_DB.prepare("DELETE FROM uploads WHERE id IN (SELECT value FROM json_each(?)) AND state='deleting'").bind(JSON.stringify(values.results.map(value => value.id))).run();
       } catch { fail(503, '파일 삭제를 마무리하지 못했습니다. 서버가 자동으로 재시도합니다.'); }
     }
     return json({ deleted: values.results.length });
@@ -338,20 +338,20 @@ async function handle(request: Request, env: Env, ctx: Context) {
     if ('id' in data) {
       if (typeof data.id !== 'string' || !/^[a-f0-9-]{36}$/.test(data.id) ||
         (data.beforeId !== null && (typeof data.beforeId !== 'string' || !/^[a-f0-9-]{36}$/.test(data.beforeId)))) fail(400, '이동할 파일 위치가 올바르지 않습니다.');
-      const moved = await reorderOne(env.DB, data.id, data.beforeId as string | null, Number(data.revision));
+      const moved = await reorderOne(env.MY_DB, data.id, data.beforeId as string | null, Number(data.revision));
       if (!moved) fail(409, '다른 곳에서 목록을 변경했습니다. 새로고침 후 다시 정렬하세요.', 'conflict');
       return json({ revision: Number(data.revision) + 1 });
     }
     const ids = validIds(data.ids);
     // D1 batch is one transaction: compare revision/full membership, update all positions,
     // then advance the revision only if every expected row changed. Competing writes serialize.
-    const result = await env.DB.batch([
-      env.DB.prepare(`UPDATE uploads SET sort_order=(SELECT CAST(key AS INTEGER) FROM json_each(?) WHERE value=uploads.id)
+    const result = await env.MY_DB.batch([
+      env.MY_DB.prepare(`UPDATE uploads SET sort_order=(SELECT CAST(key AS INTEGER) FROM json_each(?) WHERE value=uploads.id)
         WHERE state='ready' AND (SELECT revision FROM storage_usage WHERE id=1)=?
         AND (SELECT COUNT(*) FROM uploads WHERE state='ready')=?
         AND (SELECT COUNT(*) FROM uploads WHERE state='ready' AND id IN (SELECT value FROM json_each(?)))=? RETURNING id`)
         .bind(JSON.stringify(ids), data.revision, ids.length, JSON.stringify(ids), ids.length),
-      env.DB.prepare('UPDATE storage_usage SET revision=revision+1 WHERE id=1 AND revision=? AND changes()=? RETURNING revision').bind(data.revision, ids.length),
+      env.MY_DB.prepare('UPDATE storage_usage SET revision=revision+1 WHERE id=1 AND revision=? AND changes()=? RETURNING revision').bind(data.revision, ids.length),
     ]);
     if (result[0].results.length !== ids.length || !result[1].results.length) fail(409, '다른 곳에서 목록을 변경했습니다. 새로고침 후 다시 정렬하세요.', 'conflict');
     return json({ revision: Number(data.revision) + 1 });
