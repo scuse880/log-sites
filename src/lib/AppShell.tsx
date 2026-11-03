@@ -166,6 +166,11 @@ export default function AppShell({ siteTitle, posts, filesPage, searchData }: {
         <TreeView node={tree} expanded={expanded} selectedPath={selectedPost?.path} onToggle={toggleFolder} />
       </nav>
       {filesPage && <div className="sidebar-footer">
+        <a className="files-nav-link" href="https://maple.csstudylog.com" target="_blank" rel="noopener noreferrer">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M7 5h10c3 0 4 3 5 10 1 5-2 6-5 2H7c-3 4-6 3-5-2 1-7 2-10 5-10Z M7 9v5 M4.5 11.5h5 M16 10h.1 M19 13h.1" />
+          </svg>CSMaple 학습 모험
+        </a>
         <a className="files-nav-link" href="#/files" aria-current={route.kind === "files" ? "page" : undefined}>
           <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M12 3v13m-5-5 5 5 5-5M4 15v6h16v-6" />
